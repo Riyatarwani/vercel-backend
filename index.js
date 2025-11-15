@@ -23,10 +23,10 @@ app.use(cors({
   credentials: true
 }));
 
-// Mount routes with clear prefixes
-app.get("/", (req, res) => {
-  res.json({ success: true, message: "Backend running" });
-});
+// // Mount routes with clear prefixes
+// app.get("/", (req, res) => {
+//   res.json({ success: true, message: "Backend running" });
+// });
 
 
 app.use('/api/auth', authRoutes);    // Authentication routes
