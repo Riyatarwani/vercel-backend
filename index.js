@@ -27,21 +27,35 @@ app.use(cors({
 // app.get("/", (req, res) => {
 //   res.json({ success: true, message: "Backend running" });
 // });
+app.get("/", (req, res) => {
+  res.json({
+    success: true,
+    message: "Backend is running successfully on Vercel 🚀",
+    endpoints: [
+      "/api/test",
+      "/api/auth/*",
+      "/api/users/*",
+      "/api/message/*",
+      "/api/connection/*"
+    ]
+  });
+});
 
 
-app.use('/auth', authRoutes);    // Authentication routes
-app.use('/users', userRoutes);   // User-related routes
-app.use('/user', userRoutes);    // Alias for frontend compatibility
-app.use('/message', messageRoutes); // Message routes
-app.use('/connection', connectionRoutes); // Connection routes
+
+app.use('/api/auth', authRoutes);    // Authentication routes
+app.use('/api/users', userRoutes);   // User-related routes
+app.use('/api/user', userRoutes);    // Alias for frontend compatibility
+app.use('/api/message', messageRoutes); // Message routes
+app.use('/api/connection', connectionRoutes); // Connection routes
 
 // Test route
-app.get('/test', (req, res) => {
+app.get('/api/test', (req, res) => {
   res.json({ message: "API is working!" });
 });
 
 // Test auth route
-app.get('/test-auth', isLogin, (req, res) => {
+app.get('/api/test-auth', isLogin, (req, res) => {
   res.json({ 
     message: "Auth is working!", 
     user: req.user 
