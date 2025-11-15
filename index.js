@@ -24,6 +24,11 @@ app.use(cors({
 }));
 
 // Mount routes with clear prefixes
+app.get("/", (req, res) => {
+  res.json({ success: true, message: "Backend running" });
+});
+
+
 app.use('/api/auth', authRoutes);    // Authentication routes
 app.use('/api/users', userRoutes);   // User-related routes
 app.use('/api/user', userRoutes);    // Alias for frontend compatibility
