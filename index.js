@@ -5,11 +5,11 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 
 // Import all route files
-import authRoutes from '../route/authUser.js';
-import userRoutes from '../route/userRout.js';
-import messageRoutes from '../route/messageRout.js';
-import connectionRoutes from '../route/connectionRout.js';
-import isLogin from '../middleware/isLogin.js';
+import authRoutes from './route/authUser.js';
+import userRoutes from './route/userRout.js';
+import messageRoutes from './route/messageRout.js';
+import connectionRoutes from './route/connectionRout.js';
+import isLogin from './middleware/isLogin.js';
 
 dotenv.config();
 
@@ -23,63 +23,49 @@ app.use(cors({
   credentials: true
 }));
 
-// MongoDB connection (Vercel will handle this per request)
-let cachedDb = null;
+// // Mount routes with clear prefixes
+// app.get("/", (req, res) => {
+//   res.json({ success: true, message: "Backend running" });
+// });
 
-async function connectToDatabase() {
-  if (cachedDb) {
-    return cachedDb;
-  }
-  
-  const db = await mongoose.connect(process.env.MONGODB_CONNECT);
-  cachedDb = db;
-  return db;
-}
 
-// Connect to DB before handling requests
-app.use(async (req, res, next) => {
-  try {
-    await connectToDatabase();
-    next();
-  } catch (error) {
-    console.error('MongoDB connection error:', error);
-    res.status(500).json({ success: false, message: 'Database connection failed' });
-  }
-});
-
-// Mount routes - REMOVE /api prefix (Vercel adds it automatically)
-app.use('/auth', authRoutes);
-app.use('/users', userRoutes);
-app.use('/user', userRoutes);
-app.use('/message', messageRoutes);
-app.use('/connection', connectionRoutes);
+app.use('/api/auth', authRoutes);    // Authentication routes
+app.use('/api/users', userRoutes);   // User-related routes
+app.use('/api/user', userRoutes);    // Alias for frontend compatibility
+app.use('/api/message', messageRoutes); // Message routes
+app.use('/api/connection', connectionRoutes); // Connection routes
 
 // Test route
-app.get('/test', (req, res) => {
+app.get('/api/test', (req, res) => {
   res.json({ message: "API is working!" });
 });
 
 // Test auth route
-app.get('/test-auth', isLogin, (req, res) => {
+app.get('/api/test-auth', isLogin, (req, res) => {
   res.json({ 
     message: "Auth is working!", 
     user: req.user 
   });
 });
 
-// Root route
-app.get('/', (req, res) => {
-  res.json({ 
-    success: true, 
-    message: "Backend running",
-    endpoints: [
-      '/auth/login',
-      '/users/currentchatters',
-      '/message/send/:id',
-      '/test'
-    ]
+// Connect to MongoDB and start server
+mongoose.connect(process.env.MONGODB_CONNECT)  // Changed from MONGODB_URI to MONGODB_CONNECT to match your .env file
+  .then(() => {
+    console.log('Connected to MongoDB');
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+      console.log('Available endpoints:');
+      console.log('- GET /api/test');
+      console.log('- POST /api/auth/login');
+      console.log('- GET /api/users/currentchatters');
+      console.log('- POST /api/message/send/:id');
+    });
+  })
+  .catch(err => {
+    console.error('MongoDB connection error:', err);
+    process.exit(1);  // Exit with error code if MongoDB connection fails
   });
-});
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -90,13 +76,12 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 404 handler
+// 404 handler for undefined routes
 app.use((req, res) => {
   res.status(404).json({ 
     success: false,
-    error: "Endpoint not found",
-    path: req.path
+    error: "Endpoint not found" 
   });
 });
 
-export default app;
+export default app;  
